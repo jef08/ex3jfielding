@@ -4,14 +4,31 @@ require_once "autoloader.php";
 
 class Lighting extends Connection {
 
-    private $lamps=[];
+    private $lamps=[]; //put it outside so it can be used in both functions//
+    private $currentFilter = 'all';
+
+    public function setFilter($filter) {
+        $this->currentFilter = $filter;
+    }
+
+    public function getFilter() {
+        return $this->currentFilter;
+    }
 
     public function getAllLamps() {
+
+        $selected = $this->currentFilter; //set "selected" variable//
+
         $sql = "SELECT lamps.lamp_id, lamps.lamp_name, lamp_on,
                 lamp_models.model_part_number,lamp_models.model_wattage,
                 zones.zone_name FROM lamps INNER JOIN lamp_models ON
                 lamps.lamp_model=lamp_models.model_id INNER JOIN zones ON
                 lamps.lamp_zone = zones.zone_id ORDER BY lamps.lamp_id;"; //sql query//
+        
+        //For if we're selecting a specific zone//
+            if($selected !== 'all') {
+            $sql .= " WHERE zones.zone_name = '$selected'";
+        }        
         
         $stmt = $this->conn->prepare($sql); //connect to database//
         $stmt->execute();
@@ -66,7 +83,30 @@ class Lighting extends Connection {
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo $result[0]['power'];
     }
+
+    public function changeStatus($id, $status) {
+        $sql = "UPDATE lamps SET lamp_on = $status WHERE lamp_id = $id"; //update the status//
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+    }
+
+    public function drawZoneOptions() {
+        $sql = "SELECT zone_name from zones"; //select the zone names from the zone table//
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        $zones = $stmt->fetchAll(PDO::FETCH_ASSOC); //zones variable equals output of sql query//
+
+        echo '<option value = "all">All Zones</option>'; //give option for all zones//
+        foreach ($zones as $zone) {
+            if ($zone['zone_name']===$this->currentFilter) {
+                $selected = 'selected';
+            } else {
+                $selected = '';
+            }
+            echo '<option value="' . $zone['zone_name'] . '" ' . $selected . '>' . $zone['zone_name'] . '</option>';
+        }
+    }
+    
+    
 }
-
 ?>
-

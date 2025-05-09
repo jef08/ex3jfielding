@@ -1,3 +1,13 @@
+<?php
+require_once "autoloader.php"; 
+$lighting = new Lighting();
+
+if (isset($_POST['filter'])) {
+    $lighting->setFilter($_POST['filter']);
+}
+
+$lighting->getAllLamps();
+?>
 <!DOCTYPE html>
 <html>
     <head>
@@ -5,13 +15,18 @@
         <link rel = "stylesheet" href = "styles.css">
     </head>
     <body>
-        <h1>Lamps</h1>
+        <div class = "content">
+        <h1>BIG STADIUM - LIGHTING CONTROL PANEL</h1>
+        <form action = "index.php" method="POST">
+            <select name="filter">
+                <?= $lighting->drawZoneOptions()?>
+            </select>            
+            <input type="submit" value = "Filter by zone">
+        </form>
         <?php
-        require_once "autoloader.php";
-        $lighting = new Lighting();
-        $lighting->getAllLamps();
         $lighting->drawLampsList();
         $lighting->showWattsPerZone();
         ?>
+        </div>
     </body>
 </html>
