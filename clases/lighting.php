@@ -7,8 +7,8 @@ class Lighting extends Connection {
     private $lamps=[]; //put it outside so it can be used in both functions//
     private $currentFilter = 'all';
 
-    public function setFilter($filter) {
-        $this->currentFilter = $filter;
+    public function setFilter($currentFilter) {
+        $this->currentFilter = $currentFilter;
     }
 
     public function getFilter() {
@@ -17,18 +17,20 @@ class Lighting extends Connection {
 
     public function getAllLamps() {
 
-        $selected = $this->currentFilter; //set "selected" variable//
+        $currentFilter = $this->currentFilter; //set "currentFilter" variable//
 
         $sql = "SELECT lamps.lamp_id, lamps.lamp_name, lamp_on,
                 lamp_models.model_part_number,lamp_models.model_wattage,
                 zones.zone_name FROM lamps INNER JOIN lamp_models ON
                 lamps.lamp_model=lamp_models.model_id INNER JOIN zones ON
-                lamps.lamp_zone = zones.zone_id ORDER BY lamps.lamp_id;"; //sql query//
+                lamps.lamp_zone = zones.zone_id"; //sql query//
         
         //For if we're selecting a specific zone//
-            if($selected !== 'all') {
-            $sql .= " WHERE zones.zone_name = '$selected'";
-        }        
+        if($currentFilter !== 'all') {
+            $sql .= " WHERE zones.zone_name = '$currentFilter'";
+        }
+        
+        $sql .= " ORDER BY lamps.lamp_id;"; //Because "WHERE" clause has to come before "ORDER BY"//
         
         $stmt = $this->conn->prepare($sql); //connect to database//
         $stmt->execute();
@@ -91,6 +93,8 @@ class Lighting extends Connection {
     }
 
     public function drawZoneOptions() {
+        $currentFilter = $this->currentFilter;
+
         $sql = "SELECT zone_name from zones"; //select the zone names from the zone table//
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
@@ -98,7 +102,7 @@ class Lighting extends Connection {
 
         echo '<option value = "all">All Zones</option>'; //give option for all zones//
         foreach ($zones as $zone) {
-            if ($zone['zone_name']===$this->currentFilter) {
+            if ($zone['zone_name']===$currentFilter) {
                 $selected = 'selected';
             } else {
                 $selected = '';

@@ -7,6 +7,7 @@ if (isset($_POST['filter'])) {
 }
 
 $lighting->getAllLamps();
+
 ?>
 <!DOCTYPE html>
 <html>
