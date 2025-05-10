@@ -2,8 +2,10 @@
 require_once "autoloader.php"; 
 $lighting = new Lighting();
 
-if (isset($_POST['filter'])) {
+if (isset($_POST['filter'])) { //if form is being submitted//
     $lighting->setFilter($_POST['filter']);
+} elseif (isset($_GET['filter'])) { //if page is being refreshed from changestatus.php//   
+    $lighting->setFilter($_GET['filter']);
 }
 
 $lighting->getAllLamps();
@@ -24,9 +26,10 @@ $lighting->getAllLamps();
             </select>            
             <input type="submit" value = "Filter by zone">
         </form>
+        <p>Total Wattage:</p>
         <?php
-        $lighting->drawLampsList();
         $lighting->showWattsPerZone();
+        $lighting->drawLampsList();
         ?>
         </div>
     </body>

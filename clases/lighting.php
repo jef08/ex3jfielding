@@ -54,36 +54,44 @@ class Lighting extends Connection {
     }
 
     public function drawLampsList() { //put the different lamps into divs to be displayed on screen//
+
+        $currentFilter = $this->currentFilter; //So we can maintain same filter even after changing status of a bulb//
         echo '<div class = "lamps-container">'; //create container//
 
         foreach ($this->lamps as $lamp) { //look at each row in $lamps//
             echo '<div class = "lamp-div">';
-            echo '<p>' . $lamp->getName() . '</p>';
-
-            echo '<p>'; 
+            echo '<p>' . $lamp->getName() . '<br>';
+ 
             if ($lamp->getStatus() === 1) {
-                echo '<a href = "changeStatus.php?id=' . $lamp->getID() . '&status=0"><img src = "img/bulb-icon-on.png"></a>'; //Status is zero because we want to change from 1 to 0 with the link//
+                //Status is zero because we want to change from 1 to 0 with the link, filter lets us grab the filter and keep it the same even after reloading index.php//
+                echo '<a href = "changeStatus.php?id=' . $lamp->getID() . '&status=0&filter=' . urlencode($currentFilter) . '"><img src="img/bulb-icon-on.png"></a>';
             } elseif ($lamp->getStatus() === 0) {
-                echo '<a href = "changeStatus.php?id=' . $lamp->getID() . '&status=1"><img src = "img/bulb-icon-off.png"></a>';  //Same thing but opposite, we can use the id to change the status of that particular lamp//
+                //Same thing but opposite, we can use the id to change the status of that particular lamp//
+                echo '<a href = "changeStatus.php?id=' . $lamp->getID() . '&status=1&filter=' . urlencode($currentFilter) . '"><img src="img/bulb-icon-off.png"></a>';
             } 
-            echo '</p>'; //If lamp is ON = 1 if OFF = 0//
+            echo '<br>'; //If lamp is ON = 1 if OFF = 0//
 
-            echo '<p class = "watts">' . $lamp->getWatts() . 'W</p>';
-            echo '<p>' . $lamp->getZone() . '</p>';
+            echo '<span class = "watts">' . $lamp->getWatts() . 'W</span><br>';
+            echo $lamp->getZone() . '</p>';
             echo "</div>";
         }
         echo '</div>';
     }
 
     public function showWattsPerZone() {
+        $currentFilter = $this->currentFilter; //set up current filter to add ON lamps based on filter//
         $sql = "SELECT SUM(lamp_models.model_wattage) as power FROM
                 `lamps` INNER JOIN lamp_models on
-                lamp_model=lamp_models.model_id WHERE lamp_on = 1 ;";
+                lamp_model=lamp_models.model_id INNER JOIN zones ON lamps.lamp_zone = zones.zone_id WHERE lamp_on = 1"; //include lamp zones to be able to do sum based on zone//
+
+        if($currentFilter !== 'all') {
+            $sql .= " AND zones.zone_name = '$currentFilter'";
+        }
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo $result[0]['power'];
+        echo '<strong>' . $result[0]['power'] . 'W</strong>';
     }
 
     public function changeStatus($id, $status) {

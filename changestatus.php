@@ -8,8 +8,14 @@ if (isset($_GET['id']) && isset($_GET['status'])) { //The get request pulls the 
 
     $lighting = new Lighting(); //create new lighting//
     $lighting->changeStatus($id, $status); //Update the database//
+    
+    if (isset($_GET['filter'])) {
+        $filter = $_GET['filter'];  //if filter is set in url then grab it//
+    } else {
+        $filter = 'all';
+    }
 }
 
-header('Location: index.php'); //go back to index.php once the update is done//
+header('Location: index.php?filter=' . urlencode($filter)); //go back to index.php with correct filter once the update is done//
 exit();
 ?>
